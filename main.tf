@@ -180,7 +180,7 @@ resource "aws_key_pair" "app_server" {
 
 # Create EC2 Instance
 resource "aws_instance" "app_server" {
-  ami                         = locals.ec2_ami
+  ami                         = local.ec2_ami
   instance_type               = "t2.micro"
   subnet_id                   = aws_subnet.public_1.id
   vpc_security_group_ids      = [aws_security_group.ec2.id]
@@ -193,9 +193,14 @@ resource "aws_instance" "app_server" {
   }
 }
 
+module "s3" {
+  source = "./s3"
+  env    = local.env
+}
+
 # Output values
 output "rds_endpoint" {
-  value = aws_db_instance.rds_instance.endpoint
+  value = aws_db_instance.rds_instance.address
 }
 
 output "ec2_public_ip" {
