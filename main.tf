@@ -18,9 +18,9 @@ locals {
   availability_zone1 = "sa-east-1a"
   availability_zone2 = "sa-east-1b"
 
-  db_name     = "postgres"
+  db_name     = "test"
   db_username = "postgres"
-  db_password = "aA#123456"
+  db_password = "gK1_sm3wTa25fLXOgrsQ"
   db_port     = 5432
 
   ec2_ssh_key = file("~/.ssh/id_rsa.pub")
@@ -139,6 +139,20 @@ resource "aws_security_group" "ec2" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+  ingress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
   egress {
     from_port   = 0
     to_port     = 0
@@ -155,23 +169,23 @@ resource "aws_db_subnet_group" "subnet_group_dev" {
 }
 
 # Create RDS PostgreSQL Instance
-resource "aws_db_instance" "rds_instance" {
-  allocated_storage      = 10
-  identifier             = "${local.env}-rds-instance"
-  instance_class         = "db.t4g.micro"
-  engine                 = "postgres"
-  engine_version         = "17.4"
-  db_subnet_group_name   = aws_db_subnet_group.subnet_group_dev.name
-  vpc_security_group_ids = [aws_security_group.rds.id]
+# resource "aws_db_instance" "rds_instance" {
+#   allocated_storage      = 10
+#   identifier             = "${local.env}-rds-instance"
+#   instance_class         = "db.t4g.micro"
+#   engine                 = "postgres"
+#   engine_version         = "17.4"
+#   db_subnet_group_name   = aws_db_subnet_group.subnet_group_dev.name
+#   vpc_security_group_ids = [aws_security_group.rds.id]
 
-  skip_final_snapshot = true
+#   skip_final_snapshot = true
 
-  db_name  = local.db_name
-  username = local.db_username
-  password = local.db_password
-  port     = local.db_port
+#   db_name  = local.db_name
+#   username = local.db_username
+#   password = local.db_password
+#   port     = local.db_port
 
-}
+# }
 
 resource "aws_key_pair" "app_server" {
   key_name   = "${local.env}-key-name"
@@ -199,10 +213,14 @@ module "s3" {
 }
 
 # Output values
-output "rds_endpoint" {
-  value = aws_db_instance.rds_instance.address
-}
+# output "rds_endpoint" {
+#   value = aws_db_instance.rds_instance.address
+# }
 
 output "ec2_public_ip" {
   value = aws_instance.app_server.public_ip
+}
+
+output "ec2_public_dns" {
+  value = aws_instance.app_server.public_dns
 }

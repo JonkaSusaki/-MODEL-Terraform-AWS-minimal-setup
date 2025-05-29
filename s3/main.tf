@@ -5,13 +5,13 @@ variable "env" {
 
 variable "bucket_names" {
   type    = list(string)
-  default = ["bucket1", "bucket2", "bucket3"]
+  default = ["perfil", "local", "role"]
 
 }
 
 resource "aws_s3_bucket" "bucket" {
   for_each      = toset(var.bucket_names)
-  bucket        = "${var.env}-bucket-${each.key}"
+  bucket        = "${var.env}-bakko-${each.key}"
   force_destroy = true
 }
 
@@ -27,6 +27,8 @@ resource "aws_s3_bucket_public_access_block" "public_block" {
 }
 
 data "aws_iam_policy_document" "allow_public_access" {
+  for_each = aws_s3_bucket.bucket
+
   statement {
     effect = "Allow"
     principals {
@@ -34,13 +36,13 @@ data "aws_iam_policy_document" "allow_public_access" {
       identifiers = ["*"]
     }
     actions   = ["s3:GetObject"]
-    resources = [for bucket in aws_s3_bucket.bucket : "${bucket.arn}/*"]
+    resources = ["${each.value.arn}/*"]
   }
 }
 
 resource "aws_s3_bucket_policy" "policies" {
-  for_each     = aws_s3_bucket.bucket
-  bucket       = each.value.id
-  policy       = data.aws_iam_policy_document.allow_public_access.json
+  for_each   = aws_s3_bucket.bucket
+  bucket     = each.value.id
+  policy     = data.aws_iam_policy_document.allow_public_access[each.key].json
   depends_on = [aws_s3_bucket_public_access_block.public_block]
 }
