@@ -11,7 +11,7 @@ terraform {
 
 # Local variables
 locals {
-  env     = "dev"
+  env     = "test"
   ec2_ami = "ami-0b04486d62582a5b9" # Ubuntu 24.04 LTS AMD64 (sa-east-1)
 
   region             = "sa-east-1"
@@ -142,6 +142,13 @@ resource "aws_security_group" "ec2" {
   ingress {
     from_port   = 80
     to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    from_port   = 8080
+    to_port     = 8080
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
